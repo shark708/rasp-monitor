@@ -17,14 +17,17 @@
         <a-space>SWAP使用率：<a-progress :steps="10" :percent="swapUsageRatio"
             :strokeColor="getStatusColorFromRatio(swapUsageRatio)" status="active" /></a-space>
       </a-col>
-      <a-col :span="4">
+      <a-col :span="2">
         <a-space>CPU温度：<a-tag :color="getStatusColorFromTemperature(systemInfo.temperature.main || 0)">{{
           systemInfo.temperature.main || '--' }}</a-tag></a-space>
       </a-col>
-      <a-col :span="3">
+      <a-col :span="2">
         <a-space>网络可用: <a-tag color="green" v-if="networkInfo.netAvailable">可用</a-tag> <a-tag color="red"
             v-if="!networkInfo.netAvailable">不可用</a-tag>
         </a-space>
+      </a-col>
+      <a-col :span="3">
+        <a-space>启动时长: {{ startupTime }}</a-space>
       </a-col>
     </a-row>
   </div>
@@ -36,7 +39,6 @@
           <a-card title="主机信息" :bordered="false" style="text-align: left;">
             <p>IP: {{ osInfo.ipAddresses.join(",") }}</p>
             <p>主机名：{{ osInfo.hostname }}</p>
-            <!-- <p>运行时长：{{ upTime }}</p> -->
             <p>系统版本：{{ osInfo.platform }} {{ osInfo.release }}</p>
             <a-divider dashed>CPU</a-divider>
             <p>芯片: {{ systemInfo.cpuInfo.manufacturer }} {{ systemInfo.cpuInfo.brand }}</p>
@@ -116,6 +118,8 @@ const getStatusColorFromTemperature = function (temperature) {
 export default {
   name: 'App',
   setup() {
+    const startupTime = ref('- 天 - 小时 - 分');
+
     const osInfo = ref({
       ipAddresses: [],
       hostname: '',
@@ -134,6 +138,15 @@ export default {
     const networkInfo = ref({
       netAvailable: false
     });
+
+  const fetchStartupTime = async () => {
+    try {
+      const response = await axios.get('/api/startupTime');
+      startupTime.value=response.data['startupTime'];
+    } catch (error) {
+      console.error('调用API时出错:', error);
+    }
+  };
 
     const fetchSystemInfo = async () => {
       try {
@@ -166,8 +179,13 @@ export default {
 
       fetchSystemInfo();
       fetchNetworkInfo();
+      fetchStartupTime();
 
-      const fetchInterval = setInterval([fetchSystemInfo, fetchNetworkInfo], 5 * 1000);
+      const fetchInterval = setInterval(() => {
+        fetchSystemInfo();
+        fetchNetworkInfo();
+        fetchStartupTime();
+      }, 3000);
 
       window.fetchInterval = fetchInterval;
     });
@@ -176,7 +194,7 @@ export default {
       clearInterval(window.fetchInterval);
     });
 
-    return { osInfo, systemInfo, networkInfo };
+    return { startupTime, osInfo, systemInfo, networkInfo };
   },
   computed: {
     memUsageRatio() {
