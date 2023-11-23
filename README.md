@@ -8,6 +8,7 @@
 
 ### 直接安装
 
+
 1. 下载安装包
 
 可以通过git
@@ -28,6 +29,20 @@ scp -r rasp-monitor xxx@xxx.xxx.xxx.xxx:/xxxx
 ```
 
 3. 解压后执行命令
+
+安装前请确认树莓派已经安装了nodejs和npm
+
+```
+# CentOS
+curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
+
+# Debian
+sudo apt-get install -y nodejs
+
+# 验证
+node -v
+npm -v
+```
 
 ```
 # 默认启动后是80端口，也可以指定其他端口
