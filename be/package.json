@@ -13,6 +13,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "internet-available": "^1.0.0",
+    "node-wifi": "^2.0.16",
     "systeminformation": "^5.21.17"
   }
 }

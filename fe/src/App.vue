@@ -9,25 +9,26 @@
           </a-space>
         </div>
       </a-col>
-      <a-col :span="6">
+      <a-col :span="5">
         <a-space>内存使用率：<a-progress :steps="10" :percent="memUsageRatio"
             :strokeColor="getStatusColorFromRatio(memUsageRatio)" status="active" /></a-space>
       </a-col>
-      <a-col :span="6">
+      <a-col :span="5">
         <a-space>SWAP使用率：<a-progress :steps="10" :percent="swapUsageRatio"
             :strokeColor="getStatusColorFromRatio(swapUsageRatio)" status="active" /></a-space>
       </a-col>
-      <a-col :span="2">
+      <a-col :span="4">
         <a-space>CPU温度：<a-tag :color="getStatusColorFromTemperature(systemInfo.temperature.main || 0)">{{
           systemInfo.temperature.main || '--' }}</a-tag></a-space>
       </a-col>
-      <a-col :span="2">
-        <a-space>网络可用: <a-tag color="green" v-if="networkInfo.netAvailable">可用</a-tag> <a-tag color="red"
-            v-if="!networkInfo.netAvailable">不可用</a-tag>
+      <a-col :span="4">
+        <a-space>WIFI: <a-tag color="green" v-if="wifiInfo.wifi">{{ wifiInfo.wifi[0].ssid || '--' }}</a-tag>
         </a-space>
       </a-col>
-      <a-col :span="3">
-        <a-space>启动时长: {{ startupTime }}</a-space>
+      <a-col :span="4">
+        <a-space>网络: <a-tag color="green" v-if="networkInfo.netAvailable">可用</a-tag> <a-tag color="red"
+            v-if="!networkInfo.netAvailable">不可用</a-tag>
+        </a-space>
       </a-col>
     </a-row>
   </div>
@@ -37,6 +38,7 @@
       <a-col :span="6">
         <div style="padding: 10px">
           <a-card title="主机信息" :bordered="false" style="text-align: left;">
+            <p>启动时长: {{ startupTime }}</p>
             <p>IP: {{ osInfo.ipAddresses.join(",") }}</p>
             <p>主机名：{{ osInfo.hostname }}</p>
             <p>系统版本：{{ osInfo.platform }} {{ osInfo.release }}</p>
@@ -118,6 +120,7 @@ const getStatusColorFromTemperature = function (temperature) {
 export default {
   name: 'App',
   setup() {
+    const intervals = [];
     const startupTime = ref('- 天 - 小时 - 分');
 
     const osInfo = ref({
@@ -139,14 +142,18 @@ export default {
       netAvailable: false
     });
 
-  const fetchStartupTime = async () => {
-    try {
-      const response = await axios.get('/api/startupTime');
-      startupTime.value=response.data['startupTime'];
-    } catch (error) {
-      console.error('调用API时出错:', error);
-    }
-  };
+    const wifiInfo = ref({
+      wifi: [{ ssid: '' }]
+    });
+
+    const fetchStartupTime = async () => {
+      try {
+        const response = await axios.get('/api/startupTime');
+        startupTime.value = response.data['startupTime'];
+      } catch (error) {
+        console.error('调用API时出错:', error);
+      }
+    };
 
     const fetchSystemInfo = async () => {
       try {
@@ -168,33 +175,42 @@ export default {
       }
     };
 
+    const fetchWifiInfo = async () => {
+      try {
+        const response = await axios.get('/api/wifiInfo');
+        wifiInfo.value = response.data;
+        console.log("WIFI", wifiInfo.value);
+      } catch (error) {
+        console.error('调用API时出错:', error);
+      }
+    };
+
     onMounted(async () => {
 
       try {
         const response = await axios.get('/api/osInfo');
         osInfo.value = response.data;
+        console.log("操作系统", osInfo.value);
       } catch (error) {
         console.error('调用API时出错:', error);
       }
 
       fetchSystemInfo();
       fetchNetworkInfo();
+      fetchWifiInfo();
       fetchStartupTime();
 
-      const fetchInterval = setInterval(() => {
-        fetchSystemInfo();
-        fetchNetworkInfo();
-        fetchStartupTime();
-      }, 3000);
-
-      window.fetchInterval = fetchInterval;
+      intervals.push(setInterval(fetchSystemInfo, 5000));
+      intervals.push(setInterval(fetchNetworkInfo, 10000));
+      intervals.push(setInterval(fetchWifiInfo, 5000));
+      intervals.push(setInterval(fetchStartupTime, 2000));
     });
 
     onBeforeUnmount(() => {
-      clearInterval(window.fetchInterval);
+      intervals.forEach(clearInterval);
     });
 
-    return { startupTime, osInfo, systemInfo, networkInfo };
+    return { startupTime, osInfo, systemInfo, networkInfo, wifiInfo };
   },
   computed: {
     memUsageRatio() {
