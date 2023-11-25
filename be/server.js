@@ -54,7 +54,6 @@ app.get('/api/wifiInfo', async (req, res) => {
   try {
     const wifiInfo = await getWifiInfo();
     res.json(wifiInfo);
-    console.log("wifi", wifiInfo);
   } catch (error) {
     console.error('获取WIFI信息时出错:', error);
     res.status(500).json({ error: 'Internal Server Error' });

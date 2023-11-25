@@ -10,12 +10,24 @@
         </div>
       </a-col>
       <a-col :span="5">
-        <a-space>内存使用率：<a-progress :steps="10" :percent="memUsageRatio"
-            :strokeColor="getStatusColorFromRatio(memUsageRatio)" status="active" /></a-space>
+        <a-space>内存使用率：
+          <a-tooltip>
+            <template #title>{{ Math.round(systemInfo.memInfo.used / 1024 / 1024 / 1024, 2) }}
+              GB/{{ Math.round(systemInfo.memInfo.total / 1024 / 1024 / 1024, 2) }} GB</template>
+            <a-progress :steps="10" :percent="memUsageRatio" :strokeColor="getStatusColorFromRatio(memUsageRatio)"
+              status="active" />
+          </a-tooltip>
+        </a-space>
       </a-col>
       <a-col :span="5">
-        <a-space>SWAP使用率：<a-progress :steps="10" :percent="swapUsageRatio"
-            :strokeColor="getStatusColorFromRatio(swapUsageRatio)" status="active" /></a-space>
+        <a-space>SWAP使用率：
+          <a-tooltip>
+            <template #title>{{ Math.round(systemInfo.memInfo.swapused / 1024 / 1024 / 1024, 2) }}
+              GB/{{ Math.round(systemInfo.memInfo.swaptotal / 1024 / 1024 / 1024, 2) }} GB</template>
+            <a-progress :steps="10" :percent="swapUsageRatio" :strokeColor="getStatusColorFromRatio(swapUsageRatio)"
+              status="active" />
+          </a-tooltip>
+        </a-space>
       </a-col>
       <a-col :span="4">
         <a-space>CPU温度：<a-tag :color="getStatusColorFromTemperature(systemInfo.temperature.main || 0)">{{
@@ -26,8 +38,8 @@
         </a-space>
       </a-col>
       <a-col :span="4">
-        <a-space>网络: <a-tag color="green" v-if="networkInfo.netAvailable">可用</a-tag> <a-tag color="red"
-            v-if="!networkInfo.netAvailable">不可用</a-tag>
+        <a-space>网络: <a-tag color="green" v-if="networkInfo.netAvailable">联网</a-tag> <a-tag color="red"
+            v-if="!networkInfo.netAvailable">未联网</a-tag>
         </a-space>
       </a-col>
     </a-row>
@@ -50,18 +62,26 @@
             <p>可用内存：{{ freeMemGB }} GB</p>
             <a-divider dashed>磁盘</a-divider>
             <li v-for="disk in systemInfo.diskInfo" v-bind:key="disk.fs">
-              <a-space>
-                {{ disk.fs }} ({{ disk.type }})<a-progress :steps="10"
-                  :percent="Math.round(disk.used / disk.size * 100, 2)" status="active"
-                  :strokeColor="getStatusColorFromRatio(Math.round(disk.used / disk.size * 100, 2))" />
-              </a-space>
+              <div>
+                <p>{{ disk.type }}:{{ disk.mount }}</p>
+                <p>
+                  <a-tooltip>
+                    <template #title>
+                      {{ Math.round(disk.used / 1024 / 1024 / 1024, 2) }} GB/{{ Math.round(disk.size / 1024 / 1024 / 1024,
+                        2) }} GB
+                    </template>
+                    <a-progress :steps="10" :percent="Math.round(disk.used / disk.size * 100, 2)" status="active"
+                      :strokeColor="getStatusColorFromRatio(Math.round(disk.used / disk.size * 100, 2))" />
+                  </a-tooltip>
+                </p>
+              </div>
             </li>
           </a-card>
         </div>
       </a-col>
       <a-col :span="18">
         <div style="padding: 10px">
-          <a-table :columns="columns" :data-source="systemInfo.processes" />
+          <a-table :columns="columns" :data-source="systemInfo.processes" :pagination="{ defaultPageSize: 20 }" />
         </div>
       </a-col>
     </a-row>
@@ -77,22 +97,27 @@ const columns = ref([
     title: '进程名',
     dataIndex: 'name',
     key: 'name',
+    sorter: (a, b) => a.name.localeCompare(b.name),
   }, {
     title: '进程ID',
     dataIndex: 'pid',
     key: 'pid',
+    sorter: (a, b) => a.pid - b.pid,
   }, {
     title: 'CPU',
     dataIndex: 'cpu',
     key: 'cpu',
+    sorter: (a, b) => a.cpu - b.cpu,
   }, {
     title: '内存',
     dataIndex: 'mem',
     key: 'mem',
+    sorter: (a, b) => a.mem - b.mem,
   }, {
     title: '用户',
     dataIndex: 'user',
     key: 'user',
+    sorter: (a, b) => a.user.localeCompare(b.user),
   },
 ]);
 
