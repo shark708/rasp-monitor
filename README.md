@@ -37,7 +37,7 @@ scp -r rasp-monitor xxx@xxx.xxx.xxx.xxx:/xxxx
 curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
 
 # Debian
-sudo apt-get install -y nodejs
+curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
 # 验证
 node -v

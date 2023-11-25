@@ -10,7 +10,7 @@ async function getSystemInfo() {
 
     await si.processes()
       .then(data => {
-        info['processes']=data.list
+        info['processes'] = data.list
       })
       .catch(error => {
         console.error('获取进程信息时出错:', error);
