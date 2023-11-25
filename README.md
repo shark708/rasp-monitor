@@ -9,43 +9,64 @@
 ### 直接安装
 
 
-1. 下载安装包
+#### 1. 登录树莓派
 
-可以通过git
+##### 安装git
+
+```
+# CentOS
+> sudo yum install git
+
+
+# Debian
+> sudo apt install git
+
+# 验证
+> git -v
+git version 2.39.2
+```
+
+##### 安装nodejs
+
+```
+# CentOS
+> curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
+
+# Debian
+> curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+
+# 验证
+> node -v
+v20.5.1
+
+> npm -v
+9.8.0
+```
+
+#### 2. 下载项目
 
 ```
 git clone git@github.com:shark708/rasp-monitor.git
 ```
 
-直接下载
-
-![image](images/download.png)
-
-
-2. 上传文件至树莓派
-
-```
-scp -r rasp-monitor xxx@xxx.xxx.xxx.xxx:/xxxx
-```
-
-3. 解压后执行命令
-
-安装前请确认树莓派已经安装了nodejs和npm
-
-```
-# CentOS
-curl --silent --location https://rpm.nodesource.com/setup_20.x | sudo bash
-
-# Debian
-curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-
-# 验证
-node -v
-npm -v
-```
+#### 3. 启动
 
 ```
 # 默认启动后是80端口，也可以指定其他端口
-./startup.sh 80
+> ./startup.sh 80
 ```
 
+#### 4. 查看
+
+```
+> pm2 list
+
+┌────┬─────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name            │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼─────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ rasp-monitor    │ default     │ 1.0.0   │ fork    │ 0        │ 0      │ 15   │ online    │ 0%       │ 0b       │ shark    │ enabled  │
+└────┴─────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+```
+
+登录页面查看：http://xxx.xxx.xxx.xxx
